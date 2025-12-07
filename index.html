@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/x-icon" href="logo.png" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Skynet's Blogs</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    h1 {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-weight: 300;
+      letter-spacing: 4px;
+      margin-top: 0;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: black;
+      z-index: 2;
+      padding: 0 15px;
+      box-sizing: border-box;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Blog posts container */
+    .posts-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      max-width: 900px;
+      padding: 20px 15px;
+      z-index: 3;
+      max-height: 80vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
+    }
+
+    .posts-container.hidden {
+      display: none;
+    }
+
+    /* Blog post box */
+    .post {
+      flex: 1 1 280px;
+      min-width: 280px;
+      max-width: 300px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 120px;
+    }
+
+    @media (max-width: 768px) {
+      .post {
+        flex: 1 1 100%;
+        max-width: 100%;
+        min-width: auto;
+        margin: 0 10px;
+      }
+      
+      .posts-container {
+        padding: 10px;
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .post {
+        padding: 15px;
+        min-height: 100px;
+      }
+    }
+
+    .post:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .post a {
+      text-decoration: none;
+      color: black;
+      font-weight: 500;
+      font-size: clamp(1rem, 3vw, 1.1rem);
+      display: block;
+      line-height: 1.4;
+      word-break: break-word;
+      hyphens: auto;
+    }
+
+    .post-icon {
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    /* Blog content container - FIXED FOR ANDROID */
+    .blog-content {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 4;
+      display: none;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .blog-content.active {
+      display: block;
+    }
+
+    .close-btn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      width: 44px;
+      height: 44px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #333;
+      z-index: 5;
+      padding: 10px;
+      border-radius: 50%;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* FIXED BLOG ARTICLE CONTAINER FOR ANDROID */
+    .blog-article {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 70px 20px 40px;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 768px) {
+      .blog-article {
+        padding: 70px 15px 40px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .blog-article {
+        padding: 70px 10px 30px;
+      }
+    }
+
+    .blog-article h2 {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin-bottom: 10px;
+      color: #333;
+      line-height: 1.3;
+      word-break: break-word;
+      hyphens: auto;
+    }
+
+    .blog-article h3 {
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      margin: 25px 0 15px;
+      color: #444;
+      line-height: 1.4;
+    }
+
+    .blog-article p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+      color: #555;
+      font-size: clamp(0.95rem, 3vw, 1rem);
+      text-align: justify;
+    }
+
+    .blog-article code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      word-break: break-word;
+    }
+
+    .blog-article pre {
+      background: #f8f8f8;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 20px 0;
+      border-left: 4px solid #4CAF50;
+      font-size: clamp(0.85rem, 3vw, 0.95rem);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .blog-article ul, .blog-article ol {
+      margin: 15px 0;
+      padding-left: 25px;
+    }
+
+    .blog-article li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+      font-size: clamp(0.95rem, 3vw, 1rem);
+    }
+
+    .blog-meta {
+      color: #777;
+      font-size: clamp(0.85rem, 3vw, 0.9rem);
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+
+    .back-to-blogs {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 24px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      transition: background 0.3s;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+    }
+
+    .back-to-blogs:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    /* Social Media Logos Container */
+    .social-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    /* Social media boxes */
+    .social-box {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      opacity: 0.85;
+      background: none;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+    }
+
+    @media (max-width: 768px) {
+      .social-box {
+        width: 35px;
+        height: 35px;
+      }
+    }
+
+    .social-box:hover {
+      transform: scale(1.15);
+      opacity: 1;
+    }
+
+    /* Social logo images */
+    .social-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    @media (max-width: 768px) {
+      .social-logo {
+        width: 35px;
+        height: 35px;
+      }
+    }
+
+    /* Fallback icon styling */
+    .fallback-icon {
+      color: #000;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .fallback-icon {
+        font-size: 20px;
+      }
+    }
+    /* Hide footer on desktop */
+@media (min-width: 769px) {
+  footer {
+    display: none;
+  }
+}
+    /* Scrollbar styling */
+    .posts-container::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .posts-container::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+    }
+
+    .posts-container::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .posts-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Android-specific fixes */
+    @media (hover: none) and (pointer: coarse) {
+      .post:hover {
+        transform: none;
+        background: rgba(255, 255, 255, 0.3);
+      }
+      
+      .post:active {
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(0.98);
+      }
+      
+      .back-to-blogs:active {
+        background: rgba(0, 0, 0, 0.1);
+      }
+      
+      .close-btn:active {
+        background: rgba(0, 0, 0, 0.1);
+      }
+    }
+    /* Add this to your CSS */
+.footer-social {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 15px 0 20px;
+}
+
+.footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.footer-social a:hover {
+  transform: scale(1.2);
+}
+
+.footer-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  /* Change from grayscale to normal */
+  filter: none;
+  opacity: 0.8;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.footer-social a:hover .footer-logo {
+  transform: scale(1.1);
+  opacity: 1;
+}
+.footer-fallback {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Update the footer social media display for mobile only */
+@media (min-width: 769px) {
+  .footer-social {
+    display: none;
+  }
+}
+.title {
+  position: absolute;
+  top: 20px;
+  width: 100%;
+  text-align: center;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  font-weight: 300;
+  letter-spacing: 4px;
+  margin-top: 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: black;
+
+  z-index: 2;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+
+.title-logo {
+  height: 55px;
+  width: auto;
+  object-fit: contain;
+}
+@media (min-width: 1024px) {
+  .title-logo {
+    height: 75px;   /* bigger only on desktop */
+  }
+}
+
+h5{
+  font-size: 15px;
+
+}
+</style>
+
+</head>
+<body style="margin:0; padding:0; min-height:100vh; display:flex; flex-direction:column;">
+
+  <h1 class="title">
+  <img src="h1.png" alt="logo" class="title-logo">
+  AndroByte
+</h1>
+
+  <canvas id="grid"></canvas>
+  
+  <!-- Social media logos container -->
+  <div class="social-container" id="social-container"></div>
+
+  <!-- Blog posts container -->
+  <div class="posts-container" id="posts-container">
+    <!-- Blog posts will be dynamically generated here -->
+  </div>
+
+  <!-- Blog content container -->
+  <div class="blog-content" id="blog-content">
+    <button class="close-btn" id="close-btn">✕</button>
+    <div class="blog-article" id="blog-article">
+      <!-- Content dynamically inserted -->
+    </div>
+  </div>
+
+<footer style="text-align:center; margin-top:auto;">
+  <hr style="width:80%; border:1px solid #000; opacity:0.3;">
+  <p style="margin:10px 0; font-size:14px; color:#555;">
+    made by skynet
+  </p>
+</footer>
+
+</body>
+
+
+  <script>
+    // Add this function to your JavaScript
+function generateFooterSocial() {
+  const footerSocial = document.getElementById('footer-social');
+  if (!footerSocial) return;
+  
+  footerSocial.innerHTML = '';
+  
+  socialLogos.forEach(social => {
+    const link = document.createElement('a');
+    link.href = social.url;
+    link.target = '_blank';
+    link.title = `Visit ${social.name}`;
+    
+    const logoImg = new Image();
+    logoImg.className = 'footer-logo';
+    logoImg.alt = social.name;
+    logoImg.src = social.icon;
+    
+    logoImg.onerror = function() {
+      logoImg.style.display = 'none';
+      const fallbackSpan = document.createElement('span');
+      fallbackSpan.className = 'footer-fallback';
+      fallbackSpan.textContent = getFallbackIcon(social.type);
+      link.appendChild(fallbackSpan);
+    };
+    
+    link.appendChild(logoImg);
+    footerSocial.appendChild(link);
+  });
+}
+
+// Call this function in your init() function:
+function init() {
+  generateBlogPosts();
+  setupEventListeners();
+  startGridAnimation();
+  startSocialBoxGeneration();
+  setupHistoryManagement();
+  adjustForMobile();
+  generateFooterSocial(); // Add this line
+}
+    // =============================================
+    // BLOG DATA TEMPLATE - ADD YOUR BLOGS HERE
+    // =============================================
+    const blogData = [
+      {
+        id: 1,
+        title: "Android SSL Pinning Bypass — Complete Guide",
+        icon: '<img src="inj.png" alt="Android icon" style="width:40px;height:40px;display:block;margin:0 auto 10px;">',
+        date: "Dec 7, 2025",
+        readTime: "10 min read",
+        content: `
+          <p>Understanding Android SSL Pinning and How It Can Be Bypassed for Security Testing and HTTP/HTTPS Traffic Analysis.</p>
+          <p>What SSL Pinning is and for what purpose it is used for? </p>
+          <p>SSL Pinning is a security technique that strengthens the HTTPS connection between a client (e.g., a mobile app) and a server by "pinning" the server's public key or certificate in the app. This prevents man-in-the-middle (MITM) attacks, even if an attacker presents a certificate signed by a trusted Certificate Authority.</p>
+          
+          <h3>Prerequisites</h3>
+          <p>✅ <strong>Rooted android device</strong> (Android Studio emulator)</p>
+          <p>✅ <strong>Frida server</strong> installed on Android device</p>
+          <p>✅ <strong>Burp Suite</strong> for traffic interception</p>
+          <p>✅ <strong>Basic knowledge</strong> of Python and JavaScript</p>
+          <p>✅ <strong>Burp's CA certificate</strong> installed on Android</p>
+          <p>✅ <strong>ADB toolkit on Ubuntu</strong></p>
+          <p>✅ <strong>Basic knowledge of tools like Apktool, Linux, OpenSSL, and apksigner.</strong></p>
+            <br>
+          
+           
+          <h3>Method 1: Statically bypassing SSl Pinning</h3>
+          <b>Core Concept:</b>
+
+          </p>Instead of trusting the device's certificate store, the app has hardcoded certificate fingerprints or public keys that it compares against server certificates.</p>
+
+         <p><b> 1. Hash Comparison in Code example</b></p>
+         <pre><code>// Hardcoded SHA256 comparison public boolean verifyCertificate(X509Certificate cert){
+         String pinnedHash = "SHA256/A1B2C3..."; // Embedded in code String certHash = calculateSHA256(cert.getEncoded()); 
+         return pinnedHash.equals(certHash); // Static check }</code></pre>
+
+<h5>Step 1: Decompile the APK</h5>
+<pre><code>apktool d your_app.apk -o decompiled_output</code></pre>
+
+<h5>Step 2: Find Certificate Pinning Hashes</h5>
+<pre><code>grep -ri "sha256\|sha1\|pinHash\|publicKeyHash" ./decompiled_output/</code></pre>
+
+<h5>Step 3: Get Burp Suite Certificate Hash</h5>
+<pre><code># Find and convert Burp's certificate (if in .der format)
+openssl x509 -in ~/.BurpSuite/cacert.der -inform DER -pubkey -noout | 
+openssl pkey -pubin -outform DER | 
+openssl dgst -sha256</code></pre>
+
+<h5>Step 4: Modify and Rebuild</h5>
+<pre><code># 1. Edit hash values in files found in Step 2 with brup cert hash.
+# 2. Rebuild APK
+apktool b decompiled_output -o modified.apk
+
+# 3. Create signing key (if needed)
+keytool -genkey -v -keystore debug.keystore \
+-alias androiddebugkey -keyalg RSA \
+-keysize 2048 -validity 10000
+
+# 4. Sign the APK
+apksigner sign --ks debug.keystore modified.apk</code></pre>
+<br>
+<p><b>2. Bundle Certificate Files</b></p>
+<p>Replace the pinned certificate in app assets:</p>
+<pre><code># Find cert files in app
+find ./decompiled_output -name "*.crt" -o -name "*.pem" -o -name "*.der"
+
+# Copy your Burp cert to replace it
+cp ~/.BurpSuite/cacert.cer ./decompiled_output/res/raw/their_cert.cer
+
+# Or replace directly
+mv your_burp_cert.der ./decompiled_output/assets/pinned_cert.der</code></pre>
+          <br>
+
+
+    
+
+<p><b>3. Network Security Config</b></p>
+<p>Modify <code>/res/xml/network_security_config.xml</code>:</p>
+
+<pre><code># 1. Add user certificate trust (allow Burp)
+# Find this section and add &lt;certificates src="user"/&gt;
+
+# BEFORE:
+&lt;trust-anchors&gt;
+    &lt;certificates src="system"/&gt;
+&lt;/trust-anchors&gt;
+
+# AFTER:
+&lt;trust-anchors&gt;
+    &lt;certificates src="system"/&gt;
+    &lt;certificates src="user"/&gt;
+&lt;/trust-anchors&gt;
+
+# 2. Change/remove pin hash if present
+# Find &lt;pin-set&gt; section and edit:
+
+# TO CHANGE HASH:
+&lt;pin digest="SHA-256"&gt;YOUR_BURP_CERT_HASH_HERE&lt;/pin&gt;
+
+# OR REMOVE ENTIRE PIN-SET:
+# Delete from &lt;pin-set&gt; to &lt;/pin-set&gt;
+</code></pre>
+
+
+
+
+
+
+
+
+<br>
+<p><b>4. Custom TrustManager</b></p>
+<p>If app uses password-protected keystore you can do this to bypass it. (.bks/.p12):</p>
+<pre><code># 1. Find keystore password in source
+grep -r "password\|BKS\|KeyStore" ./decompiled_output/smali/
+
+# 2. Import Burp cert (BKS example)
+keytool -import -v -trustcacerts \
+-file burp_cert.cer \
+-keystore custom_trust.bks \
+-storetype BKS \
+-storepass FOUND_PASSWORD \
+-provider org.bouncycastle.jce.provider.BouncyCastleProvider
+</code></pre>
+
+</br>
+          <br>
+          <br>
+          <br>
+
+          <h3>Method 2: Bypassing Dynamically</h3>
+          <p><b>Using Objection</b></p>
+          <p>Objection is a runtime mobile exploration toolkit built on Frida. It provides a simple command to disable SSL pinning:</p>
+          
+        <p>Here is a simple method to bypass SSL pinning on Android. First, run Frida Server on your Android device and on Ubuntu . Then, use Objection to disable SSL pinning. Follow these steps:</p>
+        <p>follow these commands to  run frida server on android</p>
+        <h3>Install Frida on Ubuntu:</h3>
+<pre><code>sudo apt update
+sudo apt install python3 python3-pip
+
+pip3 install frida-tools
+
+# Verify:
+frida --version</code></pre>
+
+<h3>Install Frida Server on Android:</h3>
+<pre><code>1. Check architecture:
+adb shell getprop ro.product.cpu.abi
+
+2. Download matching version from:
+https://github.com/frida/frida/releases
+
+3. Extract:
+xz -d frida-server-xx.x.x-android-[arch].xz
+OR rename: mv frida-server-xx.x.x-android-arm64.xz frida-server
+
+4. Push to Android:
+adb push frida-server /data/local/tmp/
+
+5. Make executable:
+adb shell "chmod 755 /data/local/tmp/frida-server"
+
+6. Run:
+adb shell "su -c '/data/local/tmp/frida-server &'"
+
+7. Check:
+adb shell "ps -A | grep frida"</code></pre>
+
+<h3>Architecture Guide:</h3>
+<pre><code>• arm64-v8a → android-arm64
+• armeabi-v7a → android-arm
+• x86_64 → android-x86_64
+• x86 → android-x86</code></pre>
+
+
+<h3>Install Objection on Ubuntu:</h3>
+<pre><code>pip3 install objection
+
+# Verify installation:
+objection --version</code></pre>
+
+<h3>Connect App to Objection:</h3>
+<pre><code>
+1. See package names of the app you want to attach script:
+frida-ps -Ua
+
+2. Attach to running app:
+objection --name (package name) start
+
+3. Run this command to bypass SSl pinning
+android sslpinning disable
+
+</code></pre>
+
+
+<h3>Burp Traffic Check After SSL Bypass:</h3>
+
+<pre><code>1. In Burp Suite:
+   • Go to Proxy → Options
+   • Ensure proxy listener is ON (port 8080)
+   • Set to "All interfaces" or your IP
+
+2. On Android device:
+   • WiFi Settings → Modify Network → Advanced
+   • Set Proxy: Manual
+   • Host: [Your Computer IP]
+   • Port: 8080
+
+3. Install Burp Certificate:
+   • Open mobile browser → http://burp
+   • Download cacert.der → Install certificate
+
+4. Start intercepting:
+   • Burp: Proxy → Intercept is ON
+   • Objection: android sslpinning disable
+   • Use app → Traffic appears in HTTP history</code></pre> 
+
+<p>Congratulations! You have successfully bypassed SSL pinning. Your HTTPS traffic is now visible in Burp Suite for security testing and analysis.</p>
+<br>
+<br>
+
+<h3>manualy bypass using frida script </h3>
+<pre><code>
+1)Run frida server on android.
+2)See package names of the app you want to attach script:
+'frida-ps -Ua' run this command on ubuntu
+
+3)use this command to connect frida to app 
+'frida -U -f com.example.package'
+
+</code></pre>
+
+<p><b>basic frida code to hook a function inside  a app</b></p>
+<p>here we are hooking X509TrustManagerExtensions class used inside app to bypass SSL pinning</p>
+<pre><code> Java.perform(function() {
+    var X509TrustManagerExtensions = Java.use("android.net.http.X509TrustManagerExtensions");// this line hook X509TrustManagerExtensions
+    
+
+X509TrustManagerExtensions.checkServerTrusted.overload(
+    '[Ljava.security.cert.X509Certificate;', 
+    'java.lang.String', 
+    'java.lang.String'
+).implementation = function(certArray, authType, hostname) {
+    
+    // Informational log: shows which hostname's certificate is being checked
+    console.log("[+] Bypassed checkServerTrusted for: " + hostname);
+
+    // java.util.ArrayList is used because the original method normally
+    // returns a list of validated certificate chains.
+    var ArrayList = Java.use("java.util.ArrayList");
+
+    // Returning an empty ArrayList effectively signals
+    // "certificate accepted / no validation errors".
+    return ArrayList.$new();
+};
+ </code></pre> 
+
+<p>Read more about <a href="https://docs.oracle.com/javase/8/docs/api/javax/net/ssl/X509TrustManager.html">X509TrustManagerExtensions</a>.</p>
+<p>And that's it! By returning an empty array instead of a validated certificate chain, we've effectively disabled the SSL pinning mechanism. The app will now accept any SSL certificate—whether it's self-signed, expired, or from a different host—allowing for traffic interception and analysis.</p>
+<p>By understanding Frida, you can analyze most SSL pinning implementations used in mobile apps.</p>
+<p>list of methods used to implement sslpinning. and can be bypassed via frida</p>
+<ul>
+  <li>X509TrustManager</li>
+  <li>X509TrustManagerExtensions</li>
+  <li>TrustManagerImpl</li>
+  <li>OkHttp CertificatePinner</li>
+  <li>Custom X.509 Validation Classes</li>
+  <li>Network Security Config</l>
+ </ul>
+
+ <br>
+ <br>
+<p>Thanks for reading! This was a fun one to explore, and I hope my notes made it easier for you too. I’ll keep sharing more CTF solutions, Android tricks, and security insights—stay tuned.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        `
+      },
+      {
+        id: 2,
+        title: "Comming soon",
+        icon: "🛡️",
+        date: "",
+        readTime: "",
+        content: `
+
+        `
+      }
+    ];
+
+    // Social media logos data
+    const socialLogos = [
+      {
+        type: 'twitter',
+        name: 'Twitter',
+        url: 'https://twitter.com/121Sukhvir',
+        icon: 'twiter.png'
+      },
+      {
+        type: 'instagram',
+        name: 'Instagram',
+        url: 'https://instagram.com/sukhvir_050',
+        icon: 'instagram.png'
+      },
+      {
+        type: 'linkedin',
+        name: 'LinkedIn',
+        url: 'https://www.linkedin.com/in/sukhvir-singh-33a962358?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app',
+        icon: 'link.png'
+      }
+    ];
+
+    // DOM Elements
+    const canvas = document.getElementById("grid");
+    const ctx = canvas.getContext("2d");
+    const postsContainer = document.getElementById("posts-container");
+    const blogContent = document.getElementById("blog-content");
+    const blogArticle = document.getElementById("blog-article");
+    const closeBtn = document.getElementById("close-btn");
+    const socialContainer = document.getElementById("social-container");
+
+    // Variables for social boxes
+    let activeSocialBoxes = [];
+    let socialBoxId = 0;
+    let currentBlogId = null;
+
+    // Initialize the page
+    function init() {
+      generateBlogPosts();
+      setupEventListeners();
+      startGridAnimation();
+      startSocialBoxGeneration();
+      setupHistoryManagement();
+      adjustForMobile();
+    }
+
+    // Adjust layout for mobile devices
+    function adjustForMobile() {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        // Ensure proper viewport height
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+        
+        // Adjust font sizes for mobile
+        document.querySelectorAll('.blog-article p, .blog-article li').forEach(el => {
+          el.style.fontSize = 'clamp(0.95rem, 3vw, 1rem)';
+        });
+      }
+    }
+
+    // Set up browser history management
+    function setupHistoryManagement() {
+      window.addEventListener('popstate', function(event) {
+        if (event.state && event.state.blogId) {
+          showBlogContent(event.state.blogId);
+        } else {
+          hideBlogContent();
+        }
+      });
+
+      history.replaceState({ page: 'blog-list' }, '', window.location.pathname);
+    }
+
+    // Helper function for fallback icons
+    function getFallbackIcon(type) {
+      switch(type) {
+        case 'twitter': return 'X';
+        case 'instagram': return 'IG';
+        case 'linkedin': return 'IN';
+        default: return '?';
+      }
+    }
+
+    // Generate blog posts from data
+    function generateBlogPosts() {
+      postsContainer.innerHTML = '';
+      
+      blogData.forEach(blog => {
+        const postElement = document.createElement('div');
+        postElement.className = 'post';
+        postElement.setAttribute('data-blog-id', blog.id);
+        
+        postElement.innerHTML = `
+          <span class="post-icon">${blog.icon}</span>
+          <a href="#">${blog.title}</a>
+        `;
+        
+        postsContainer.appendChild(postElement);
+      });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      document.addEventListener('click', function(e) {
+        const post = e.target.closest('.post');
+        if (post) {
+          e.preventDefault();
+          const blogId = parseInt(post.getAttribute('data-blog-id'));
+          showBlogContent(blogId);
+          history.pushState({ blogId: blogId }, '', `#blog-${blogId}`);
+        }
+      });
+
+      closeBtn.addEventListener('click', function() {
+        hideBlogContent();
+        history.pushState({ page: 'blog-list' }, '', window.location.pathname);
+      });
+
+      blogContent.addEventListener('click', function(e) {
+        if (e.target === blogContent) {
+          hideBlogContent();
+          history.pushState({ page: 'blog-list' }, '', window.location.pathname);
+        }
+      });
+
+      window.addEventListener('resize', function() {
+        resizeCanvas();
+        adjustForMobile();
+      });
+    }
+
+    // Show blog content
+    function showBlogContent(blogId) {
+      const blog = blogData.find(b => b.id === blogId);
+      
+      if (blog) {
+        currentBlogId = blogId;
+        blogArticle.innerHTML = `
+          <h2>${blog.title}</h2>
+          <div class="blog-meta">Posted on ${blog.date} • ${blog.readTime}</div>
+          ${blog.content}
+          <a href="#" class="back-to-blogs" id="back-to-blogs">← Back to all blogs</a>
+        `;
+        
+        document.getElementById('back-to-blogs').addEventListener('click', function(e) {
+          e.preventDefault();
+          hideBlogContent();
+          history.pushState({ page: 'blog-list' }, '', window.location.pathname);
+        });
+        
+        blogContent.classList.add('active');
+        postsContainer.classList.add('hidden');
+        
+        // Scroll to top on Android
+        blogContent.scrollTop = 0;
+      }
+    }
+
+    // Hide blog content
+    function hideBlogContent() {
+      blogContent.classList.remove('active');
+      postsContainer.classList.remove('hidden');
+      currentBlogId = null;
+    }
+
+    // Create a social media box
+    function createSocialBox() {
+      const socialType = socialLogos[Math.floor(Math.random() * socialLogos.length)];
+      const boxId = socialBoxId++;
+      
+      const box = document.createElement('div');
+      box.className = `social-box ${socialType.type}`;
+      box.id = `social-box-${boxId}`;
+      box.title = `Visit ${socialType.name}`;
+      box.style.opacity = '0';
+      
+      const logoImg = new Image();
+      logoImg.className = 'social-logo';
+      logoImg.alt = socialType.name;
+      
+      logoImg.onerror = function() {
+        logoImg.style.display = 'none';
+        const fallbackSpan = document.createElement('span');
+        fallbackSpan.className = 'fallback-icon';
+        fallbackSpan.textContent = getFallbackIcon(socialType.type);
+        box.appendChild(fallbackSpan);
+      };
+      
+      logoImg.src = socialType.icon;
+      
+      box.appendChild(logoImg);
+      
+      const startX = -40;
+      const startY = Math.random() * (window.innerHeight - 40);
+      
+      box.style.left = `${startX}px`;
+      box.style.top = `${startY}px`;
+      
+      socialContainer.appendChild(box);
+      
+      setTimeout(() => {
+        box.style.opacity = '0.85';
+      }, 100);
+      
+      animateSocialBox(boxId, socialType, startX, startY);
+      
+      box.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(socialType.url, '_blank');
+      });
+      
+      activeSocialBoxes.push({
+        id: boxId,
+        element: box,
+        x: startX,
+        y: startY,
+        socialType: socialType
+      });
+    }
+
+    // Animate social box movement
+    function animateSocialBox(boxId, socialType, startX, startY) {
+      const box = document.getElementById(`social-box-${boxId}`);
+      if (!box) return;
+      
+      const speed = 0.3 + Math.random() * 0.4;
+      const verticalAmplitude = 15 + Math.random() * 20;
+      const verticalFrequency = 0.005 + Math.random() * 0.01;
+      let x = startX;
+      let y = startY;
+      let time = Math.random() * Math.PI * 2;
+      
+      function moveBox() {
+        x += speed;
+        y = startY + Math.sin(time) * verticalAmplitude;
+        time += verticalFrequency;
+        
+        box.style.left = `${x}px`;
+        box.style.top = `${y}px`;
+        
+        if (x > window.innerWidth - 80) {
+          const opacity = Math.max(0, (window.innerWidth - x) / 80);
+          box.style.opacity = `${opacity * 0.85}`;
+        }
+        
+        if (x > window.innerWidth + 40) {
+          box.remove();
+          activeSocialBoxes = activeSocialBoxes.filter(b => b.id !== boxId);
+          return;
+        }
+        
+        requestAnimationFrame(moveBox);
+      }
+      
+      moveBox();
+    }
+
+    // Start generating social boxes at intervals
+    function startSocialBoxGeneration() {
+      setTimeout(() => {
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => createSocialBox(), i * 1500);
+        }
+        
+        setInterval(() => {
+          if (activeSocialBoxes.length < 4) {
+            createSocialBox();
+          }
+        }, 5000 + Math.random() * 3000);
+      }, 1000);
+    }
+
+    // Canvas grid animation
+    let width, height;
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    const spacing = 40;
+    let offset = 0;
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = "#e6e6e6";
+      ctx.lineWidth = 0.5;
+
+      for (let x = (offset % spacing) - spacing; x < width; x += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+
+      for (let y = (offset % spacing) - spacing; y < height; y += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+    }
+
+    function animate() {
+      offset += 0.2;
+      drawGrid();
+      requestAnimationFrame(animate);
+    }
+
+    function startGridAnimation() {
+      resizeCanvas();
+      animate();
+    }
+
+    // Initialize the application
+    init();
+  </script>
+</body>
+</html>
